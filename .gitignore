@@ -1,0 +1,143 @@
+#
+# Global gitignore (Ubuntu)
+#
+
+# This symbolic link was put in place so that RubyMine could resolve things
+# like src="assets/federal_lib_logo.png" but it shouldn't become part of the
+# project pushed to GitHub.
+/assets
+
+# =============================================================================
+# Generic System files
+# =============================================================================
+
+# === Linux / Unix
+nohup.out
+
+# === Mac OS / OS X
+
+._*
+.AppleDouble
+.DS_Store
+.DS_Store?
+.LSOverride
+.Spotlight-V100
+.Trashes
+Icon
+Icon?
+
+# === Windows
+desktop.ini
+Thumbs.db
+
+# =============================================================================
+# Editor files
+# =============================================================================
+
+# === Emacs
+*~
+\#*
+.\#*
+/.emacs.*
+.elc
+auto-save-list
+tramp
+
+# === Textmate
+*.tmproj
+tmtags
+
+# === Vim
+*.sw?
+
+# =============================================================================
+# Development - Ruby and Rails
+# =============================================================================
+
+# === Ruby / Rails
+/rdoc
+/pkg
+#Gemfile.lock
+
+# === RubyMine
+.idea/
+
+# === RVM / rbenv
+/.rbenv-version
+#/.ruby-version # NOTE: Removed because virgo4 *does* track this...
+#/.ruby-gemset  # NOTE: ...can the project .gitignore cause ~/.gitignore to be overridden?
+/.rvmrc
+/.versions.conf
+
+# === Cucumber
+/rerun.txt
+
+# === Bundler
+/.bundle
+
+# === Yarn/NPM
+/node_modules
+/yarn-error.log
+/yarn.lock
+
+# === ByeBug gem
+.byebug_history
+
+# === Railroad gem
+# Output files at project root.
+/*.dot
+/*.svg
+
+# === Rcov
+/coverage/
+/coverage.data
+
+# === YARD
+/.yardoc/
+
+# === SQLite (development-only database)
+/db/*.sqlite
+/db/*.sqlite3
+/db/*.sqlite3-journal
+
+# === SASS
+.sass-cache/
+
+# === Ctags
+tags
+
+# === Eclipse
+/.buildpath
+/.classpath
+/.loadpath
+/.metadata/
+/.project
+/.settings/
+/*.launch
+/*.pydevproject
+/local.properties
+
+# =============================================================================
+# Other applications
+# =============================================================================
+
+# === Picasa
+.picasa.ini
+
+# === Python
+__pycache__
+
+# =============================================================================
+# Generic files
+# =============================================================================
+
+# === Backup files
+*.bak
+
+# === Log files
+*.log
+
+# === Temporary files
+*.tmp
+/tmp/*
+!/tmp/.keep

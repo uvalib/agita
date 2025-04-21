@@ -1,0 +1,91 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {   // Run with command-line arguments given at time of launch.
+            "name":     "Launch",
+            "type":     "go",
+            "request":  "launch",
+            "mode":     "auto",
+            "program":  "${workspaceFolder}",
+            "args":     ["${input:argPrompt}"]
+            //"args":   ["${input:modeMenu}","${input:namesPrompt}"]
+            
+        },
+        {   // Equivalent to `go run . -trial`.
+            "name":     "-trial",
+            "type":     "go",
+            "request":  "launch",
+            "mode":     "auto",
+            "program":  "${workspaceFolder}",
+            "args":     ["-trial"]
+        },
+        {   // Equivalent to `go run . -export`.
+            "name":     "-export",
+            "type":     "go",
+            "request":  "launch",
+            "mode":     "auto",
+            "program":  "${workspaceFolder}",
+            "args":     ["-export"]
+        },
+        {   // Equivalent to `go run . -clear`.
+            "name":     "-clear",
+            "type":     "go",
+            "request":  "launch",
+            "mode":     "auto",
+            "program":  "${workspaceFolder}",
+            "args":     ["-clear"]
+        },
+        {   // Equivalent to `go run . -transfer`.
+            "name":     "-transfer",
+            "type":     "go",
+            "request":  "launch",
+            "mode":     "auto",
+            "program":  "${workspaceFolder}",
+            "args":     ["-transfer"]
+        },
+        {   // Equivalent to `go run . -help`.
+            "name":     "-help",
+            "type":     "go",
+            "request":  "launch",
+            "mode":     "auto",
+            "program":  "${workspaceFolder}",
+            "args":     ["-help"]
+        },
+        {   // For debugging tests.
+            "name":         "Connect to server",
+            "type":         "go",
+            "request":      "attach",
+            "mode":         "remote",
+            "remotePath":   "${workspaceFolder}",
+            "port":         2345,
+            "host":         "127.0.0.1"
+        }
+    ],
+    "inputs": [
+        {
+            "id":           "argPrompt",
+            "type":         "promptString",
+            "description":  "Command Line Arguments:"
+        },
+        {
+            "id":           "modeMenu",
+            "type":         "pickString",
+            "description":  "Mode:",
+            "options": [
+                { "label": "help",     "value": "-help" },
+                { "label": "trial",    "value": "-trial" },
+                { "label": "clear",    "value": "-clear" },
+                { "label": "export",   "value": "-export" },
+                { "label": "transfer", "value": "-transfer" }
+            ]
+        },
+        {
+            "id":           "namesPrompt",
+            "type":         "promptString",
+            "description":  "Added Names:"
+        }
+    ]
+}
