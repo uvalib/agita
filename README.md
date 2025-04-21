@@ -56,9 +56,8 @@ GitHub issue or comment because
 - The original Jira ticket timestamp cannot be used to specify the creation date of the GitHub issue.
 
 In principle, any Jira metadata could be prepended to GitHub issue or comment
-bodies as comments, but the result would be all issues starting at the present
-time and owned by same GitHub user as the one who generated the GITHUB_SECRET
-key.
+bodies as comments, but the result is still that each issue and comment will
+be owned by same GitHub user as the one who generated the GITHUB_SECRET key.
 
 
 ## TRANSFER MODE

@@ -59,34 +59,6 @@ type TrialFlags struct {
 // Variables
 // ============================================================================
 
-var trialDefault = TrialFlags{
-    jira:           JiraTrials,
-    jiraProjects:   JiraProjects,
-    jiraIssues:     JiraIssues,
-    jiraComments:   JiraComments,
-    github:         GithubTrials,
-    githubUsers:    GithubUsers,
-    githubRepos:    GithubRepos,
-    githubIssues:   GithubIssues,
-    githubComments: GithubComments,
-    graphQl:        GraphQlTrials,
-    transfer:       TransferTrials,
-}
-
-var trialComplete = TrialFlags{
-    jira:           true,
-    jiraProjects:   true,
-    jiraIssues:     true,
-    jiraComments:   true,
-    github:         true,
-    githubUsers:    true,
-    githubRepos:    true,
-    githubIssues:   true,
-    githubComments: true,
-    graphQl:        true,
-    transfer:       true,
-}
-
 var trial TrialFlags
 
 // ============================================================================
@@ -118,15 +90,50 @@ func TrialAll(args ...string) {
 func trialArgs(args ...string) []string {
     names := []string{}
     if len(args) == 0 {
-        trial = trialDefault
+        trial.jira           = JiraTrials
+        trial.jiraProjects   = JiraProjects
+        trial.jiraIssues     = JiraIssues
+        trial.jiraComments   = JiraComments
+        trial.github         = GithubTrials
+        trial.githubUsers    = GithubUsers
+        trial.githubRepos    = GithubRepos
+        trial.githubIssues   = GithubIssues
+        trial.githubComments = GithubComments
+        trial.graphQl        = GraphQlTrials
+        trial.transfer       = TransferTrials
+
+    } else if args[0] == ALL_TRIALS {
+
+        trial.jira           = true
+        trial.jiraProjects   = JiraProjects
+        trial.jiraIssues     = JiraIssues
+        trial.jiraComments   = JiraComments
+        trial.github         = true
+        trial.githubUsers    = GithubUsers
+        trial.githubRepos    = GithubRepos
+        trial.githubIssues   = GithubIssues
+        trial.githubComments = GithubComments
+        trial.graphQl        = true
+        trial.transfer       = true
+
     } else {
         for _, arg := range trialExpandedArgs(args...) {
             switch {
-                case arg == ALL_TRIALS:             trial = trialComplete
                 case trialProcessArg(arg):          // try directly
                 case trialProcessArg(arg + "s"):    // try pluralized
                 default:                            names = append(names, arg)
             }
+        }
+        if trial.jira && !(trial.jiraProjects || trial.jiraIssues  || trial.jiraComments) {
+            trial.jiraProjects = JiraProjects
+            trial.jiraIssues   = JiraIssues
+            trial.jiraComments = JiraComments
+        }
+        if trial.github && !(trial.githubUsers || trial.githubRepos || trial.githubIssues || trial.githubComments) {
+            trial.githubUsers    = GithubUsers
+            trial.githubRepos    = GithubRepos
+            trial.githubIssues   = GithubIssues
+            trial.githubComments = GithubComments
         }
     }
     return names
