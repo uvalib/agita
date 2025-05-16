@@ -9,12 +9,33 @@ import (
 )
 
 // ============================================================================
+// Exported constants
+// ============================================================================
+
+const WHITE_SPACE = " \t\v\n\r"
+
+// ============================================================================
 // Exported functions
 // ============================================================================
 
 // Return the number of displayable characters in the string.
 func CharCount(s string) int {
     return len([]rune(s))
+}
+
+// Return a copy of the string with leading and trailing whitespace removed.
+func Strip(s string) string {
+    return strings.TrimSpace(s)
+}
+
+// Return a copy of the string with leading whitespace removed.
+func StripLeft(s string) string {
+    return strings.TrimLeft(s, WHITE_SPACE)
+}
+
+// Return a copy of the string with trailing whitespace removed.
+func StripRight(s string) string {
+    return strings.TrimRight(s, WHITE_SPACE)
 }
 
 // Return the string with only the first letter modified.

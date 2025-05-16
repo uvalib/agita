@@ -47,7 +47,7 @@ func GetArgs() {
     if util.InDebugger() && (len(os.Args) > 1) {
         args := []string{}
         for _, arg := range os.Args[1:] {
-            args = append(args, strings.Split(arg, " ")...)
+            args = append(args, strings.Fields(arg)...)
         }
         os.Args = append(os.Args[0:1], args...)
     }
@@ -124,11 +124,20 @@ func showUsage() {
     Show("")
     Show("Exactly one mode flag must be given.")
     Show("If no projects are specified then all projects are assumed.")
+
+    Show("")
     Show("Trial arguments:")
     Show("\tall                                  - All trials")
     Show("\tjira[:projects,issues,comments]      - Demo Jira API")
     Show("\tgithub[:users,repos,issues,comments] - Demo GitHub API")
     Show("\tgraphql                              - Demo GitHub GraphQL API")
-    Show("\ttransfer                             - Simulate a transfer")
+    Show("\ttransfer [Jira_projects...]          - Simulate a transfer")
+
+    Show("")
+    Show("Each element of `Jira_projects` may be one of:")
+    Show("\tPROJ               - All issues from Jira project PROJ")
+    Show("\tPROJ-min           - PROJ issues starting with PROJ-min")
+    Show("\tPROJ-min PROJ-max  - PROJ issues in the range [PROJ-min,PROJ-max]")
+
     Show("")
 }

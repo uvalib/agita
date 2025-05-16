@@ -6,6 +6,7 @@ package Jira
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 
 	"lib.virginia.edu/agita/log"
@@ -22,15 +23,74 @@ import (
 type IssueKey = string
 
 // ============================================================================
+// Exported variables
+// ============================================================================
+
+// Set with searchFields() on module initialization.
+var SEARCH_FIELDS []string
+
+// ============================================================================
 // Internal functions
 // ============================================================================
 
+// Use ISSUE_FIELDS_MARSHAL to determine which fields Search() should return.
+//  NOTE: This is for the sake of getting "attachment" returned.
+func searchFields() []string {
+    Type   := reflect.TypeOf(jira.IssueFields{})
+    count  := Type.NumField()
+    result := make([]string, 0, count)
+	for i := range count {
+		field := Type.Field(i)
+        name  := field.Name
+        if ISSUE_FIELDS_MARSHAL[name] {
+            tag := field.Tag.Get("json")
+            if tag == "" {
+                tag = name
+            } else {
+                tag = strings.SplitN(tag, ",", 2)[0]
+            }
+            result = append(result, tag)
+        }
+	}
+    return result
+}
+
 // Get all issues for the indicated project.
 //  NOTE: may return partial results on error
-func getIssues(client *jira.Client, project ProjKey) (result []jira.Issue) {
-    jql := fmt.Sprintf("project = %s ORDER BY Key ASC", project)
-    opt := &jira.SearchOptions{MaxResults: MAX_PER_PAGE}
-	for last, total := 0, 1; last < total; {
+func getIssues(client *jira.Client, project ProjKey) []jira.Issue {
+    return getIssueRange(client, project, "", "")
+}
+
+// Get issues for the indicated project, between keys inclusive.
+//  NOTE: may return partial results on error
+//  NOTE: JQL will fail if a stated issue does not exist
+//  NOTE: PROJ-0 and PROJ-1 will be ignored for `minKey`
+func getIssueRange(client *jira.Client, project ProjKey, minKey, maxKey IssueKey) (result []jira.Issue) {
+
+    // Build the query based on the indicated issue range.
+    jql := fmt.Sprintf("project = %s", project)
+    prj := project + "-"
+    if min := minKey; min != "" {
+        if !strings.HasPrefix(min, prj) {
+            min = prj + min
+        }
+        if (min != prj + "0") && (min != prj + "1") {
+            jql += fmt.Sprintf(" AND Key >= %q", min)
+        }
+    }
+    if max := maxKey; max != "" {
+        if !strings.HasPrefix(max, prj) {
+            max = prj + max
+        }
+        jql += fmt.Sprintf(" AND Key <= %q", max)
+    }
+    jql += " ORDER BY Key Asc"
+
+    // Specify issue fields to be returned.
+    opt := &jira.SearchOptions{Fields: SEARCH_FIELDS, MaxResults: MAX_PER_PAGE}
+
+    // Get items, possibly across multiple search response pages.
+    for last, total := 0, 1; last < total; {
         opt.StartAt = last
 		chunk, rsp, err := client.Issue.Search(jql, opt)
 		if log.ErrorValue(err) != nil {
@@ -178,5 +238,5 @@ func issueFieldsDetails(i *jira.Issue) string {
 
 // Initialize variables related to Jira issues.
 func setupIssue() {
-    // no-op
+    SEARCH_FIELDS = searchFields()
 }

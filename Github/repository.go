@@ -50,8 +50,8 @@ func AsRepositoryType(client *Client, repo *github.Repository) *Repository {
 //  NOTE: panics if the repository does not match `owner` and `name`.
 //  NOTE: returns nil if `name` is blank
 //  NOTE: returns nil on error
-func GetRepository(client *Client, owner, name string) *Repository {
-    if repo := getRepository(client.ptr, owner, name); repo == nil {
+func GetRepository(client *Client, owner, name string, silent bool) *Repository {
+    if repo := getRepository(client.ptr, owner, name, silent); repo == nil {
         return nil
     } else {
         return NewRepositoryType(client, owner, name).initRepo(repo)
@@ -104,7 +104,7 @@ func (r *Repository) initRepo(repo *github.Repository) *Repository {
 // Return the underlying repository object, fetching it if necessary.
 func (r *Repository) Repo() *github.Repository {
     if r.ptr == nil {
-        r.ptr = getRepository(r.client.ptr, r.Owner, r.Name)
+        r.ptr = getRepository(r.client.ptr, r.Owner, r.Name, false)
     }
     return r.ptr
 }

@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"lib.virginia.edu/agita/log"
+	"lib.virginia.edu/agita/markdown"
 	"lib.virginia.edu/agita/util"
 
 	"github.com/google/go-github/v69/github"
@@ -52,7 +53,7 @@ func NewIssueImport(fields map[string]any) *IssueImport {
         }
         switch key {
             case "Title":       imp.Title       = s
-            case "Body":        imp.Body        = s
+            case "Body":        imp.Body        = markdown.JiraToGithub(s)
             case "CreatedAt":   imp.CreatedAt   = github.Ptr(t)
             case "ClosedAt":    imp.ClosedAt    = github.Ptr(t)
             case "UpdatedAt":   imp.UpdatedAt   = github.Ptr(t)
@@ -102,6 +103,7 @@ func importIssue(client *github.Client, owner, repo string, imp *github.IssueImp
     if imp == nil { panic(ERR_NO_ISSUE_IMPORT) }
     req := NewIssueImportRequest(*imp, comments...).IssueImportRequest
     impRsp, rsp, err := client.IssueImport.Create(ctx, owner, repo, &req)
+    extractRateLimit(rsp)
     pending := IsScheduled(err)
     if pending || (log.ErrorValue(err) == nil) {
         log.Info("\n*** import issue %q - rsp = %v\n", imp.Title, rsp)
@@ -115,7 +117,8 @@ func importIssue(client *github.Client, owner, repo string, imp *github.IssueImp
 
 // Determine whether the import occurred and with what status.
 func checkImportIssue(client *github.Client, owner, repo string, importID int) (done bool, status string) {
-    impRsp, _, err := client.IssueImport.CheckStatus(ctx, owner, repo, int64(importID))
+    impRsp, rsp, err := client.IssueImport.CheckStatus(ctx, owner, repo, int64(importID))
+    extractRateLimit(rsp)
     if !IsScheduled(err) {
         log.ErrorValue(err)
     }

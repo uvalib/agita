@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"lib.virginia.edu/agita/convert"
+	"lib.virginia.edu/agita/util"
 
 	"lib.virginia.edu/agita/Jira"
 )
@@ -28,8 +29,10 @@ const COMMENTS_KEY = "Comments"
 
 // Output JSON for all projects and their issues and comments.
 //  NOTE: projectKeys must have ALL_PROJECTS or a list of Jira project keys.
+//  NOTE: ignores issue range specifications
 func ExportAll(projectKeys ...string) {
-    projectKeys = ValidateProjectKeys(projectKeys...)
+    projIssues := ValidateProjectKeys(projectKeys...)
+    projectKeys = util.MapKeys(projIssues)
     fmt.Print(ProjectsJson(projectKeys...), "\n")
 }
 

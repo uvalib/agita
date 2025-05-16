@@ -6,6 +6,8 @@ package main
 
 import (
 	"slices"
+
+	"lib.virginia.edu/agita/Jira"
 )
 
 // ============================================================================
@@ -35,12 +37,12 @@ func ValidateRepoNames(names ...string) []string {
 }
 
 // Abort unless `names` contains just ALL_PROJECTS or a non-empty list of Jira
-// project keys.
-func ValidateProjectKeys(names ...string) []string {
+// project keys or project issue range bounds.
+func ValidateProjectKeys(names ...string) map[string]([]string) {
     if count := len(names); count == 0 {
         Abort("must specify %q or a list of Jira projects", ALL_PROJECTS)
     } else if (count > 1) && slices.Contains(names, ALL_PROJECTS) {
         Abort("when %q is given no other names are accepted", ALL_PROJECTS)
     }
-    return names
+    return Jira.ExpandProjectKeys(names...)
 }

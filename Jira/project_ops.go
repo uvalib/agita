@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"lib.virginia.edu/agita/log"
+	"lib.virginia.edu/agita/re"
 	"lib.virginia.edu/agita/util"
 
 	"github.com/andygrunwald/go-jira"
@@ -36,6 +37,34 @@ var ProjectByKey map[ProjKey]ProjId
 // Perform a case-insensitive lookup into ProjectByKey.
 func ProjectKeyToId(key ProjKey) ProjId {
     return ProjectByKey[strings.ToUpper(key)]
+}
+
+// Treat each name as either a ProjKey or an IssueKey.
+//
+// * If PROJ appears alone then that represents (implicitly) all of the issues
+//   for Jira project PROJ.
+// * If PROJ-num appears then that represents Jira project PROJ starting at
+//   issue key "PROJ-num".
+// * If PROJ-min and PROJ-max appear then that represents Jira project PROJ
+//   issues from "PROJ-min" through "PROJ-max".
+//
+func ExpandProjectKeys(names ...string) map[string]([]string) {
+    result := map[string]([]string){}
+    for _, name := range names {
+        project := name
+        if re.Match(name, `^[A-Z]+-\d+$`) {
+            project = re.ReplaceAll(name, `^([A-Z]+)-\d+$`, "$1")
+            issue  := name
+            if minMax := result[project]; len(minMax) > 0 {
+                result[project] = append(minMax, issue)
+            } else {
+                result[project] = []string{issue}
+            }
+        } else {
+            result[project] = []string{}
+        }
+    }
+    return result
 }
 
 // ============================================================================

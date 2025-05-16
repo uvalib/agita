@@ -7,7 +7,7 @@ package Github
 import (
 	"context"
 
-    "github.com/google/go-github/v69/github"
+	"github.com/google/go-github/v69/github"
 )
 
 // ============================================================================
@@ -30,6 +30,14 @@ const CAN_SET_USER = ENTERPRISE
 
 // An output marker indicating a missing value.
 const MISSING = "-"
+
+// The prefix for lines leading a GitHub issue body which convey Jira issue
+// information that cannot be mapped on to the GitHub issue.
+const ISSUE_ANNOTATION_TAG = "ORIGINAL JIRA ISSUE"
+
+// The prefix for lines leading a GitHub comment body which convey Jira comment
+// information that cannot be mapped on to the GitHub comment.
+const COMMENT_ANNOTATION_TAG = "ORIGINAL JIRA COMMENT"
 
 // ============================================================================
 // Internal variables

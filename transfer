@@ -1,0 +1,23 @@
+#! /bin/bash
+#
+# This script can be used to transfer one project at a time and monitor its
+# progress while storing a log of the action in the "tmp" directory (which is
+# created if it does not already exist).
+
+AGITA_DIR=`dirname "$0"`
+OUT_DIR="$AGITA_DIR/tmp"
+
+PROJECT="$1"
+OUTPUT="$OUT_DIR/$PROJECT.txt"
+
+test -z "$PROJECT" && exit 1
+test -d "$OUT_DIR" || mkdir "$OUT_DIR" || exit 1
+cd $AGITA_DIR || exit 1
+
+clear
+go run . -transfer $PROJECT > $OUTPUT 2>&1 &
+tail -f $OUTPUT | egrep '(^\*\*\* Issue|ERROR|PAUSE|TRANSFERRED)'
+
+# NOTE: Stdout will also show any project content that includes any of these
+# strings.  In particular, "ERROR" may show up due to issue or comment content;
+# ignore any such line that isn't prefixed with a program function.

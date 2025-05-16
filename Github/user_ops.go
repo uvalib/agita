@@ -52,7 +52,8 @@ func UserLabels(users []*github.User) []string {
 //  NOTE: panics if the user does not match `login`.
 //  NOTE: returns nil on error
 func getUser(client *github.Client, login string) *github.User {
-    user, _, err := client.Users.Get(ctx, login)
+    user, rsp, err := client.Users.Get(ctx, login)
+    extractRateLimit(rsp)
     if (log.ErrorValue(err) != nil) || !validateUser(user, login) {
         user = nil
     }

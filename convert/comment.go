@@ -30,7 +30,7 @@ func CommentToJson(src Jira.Comment) string {
 
 // Translate a Jira issue comment into a Github comment import object.
 func Comment(comment Jira.Comment) *Github.CommentImport {
-    fld  := map[string]any{"Body": ""} // Ensure that "Body" is not nil.
+    fld  := map[string]any{}
     note := map[string]any{}
     skip := map[string]bool{}
     add  := func(key string, jiraValue any) {
@@ -39,13 +39,19 @@ func Comment(comment Jira.Comment) *Github.CommentImport {
         }
     }
 
+    // If there was no comment body, explicitly show that.
+    body := comment.Body()
+    if body == "" {
+        body = "_(no body)_"
+    }
+
     // Avoid adding an update time if it is the same as the creation time.
     created := comment.Created()
     updated := comment.Updated()
     skip["Updated"] = (created == updated)
 
     add("CreatedAt",    Github.MakeTime(created))
-    add("Body",         comment.Body())
+    add("Body",         body)
 
     if lines := commentAnnotations(comment, note, skip); len(lines) > 0 {
         notes := strings.Join(lines, "\n")
@@ -63,7 +69,7 @@ func Comment(comment Jira.Comment) *Github.CommentImport {
 // that have no (updateable) GitHub comment equivalent.
 func commentAnnotations(comment Jira.Comment, added map[string]any, skipped map[string]bool) []string {
     res  := []string{}
-    tag  := "ORIGINAL JIRA COMMENT"
+    tag  := Github.COMMENT_ANNOTATION_TAG
     max  := util.CharCount("UpdateAuthor")
     note := func(key string, jiraValue any) {
         if !skipped[key] {

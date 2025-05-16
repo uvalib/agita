@@ -36,6 +36,7 @@ func getIssueComments(client *github.Client, owner, repo string, issue int) ([]*
     fn  := util.FuncName()
     for opt.Page > 0 {
         list, rsp, err := client.Issues.ListComments(ctx, owner, repo, issue, opt)
+        extractRateLimit(rsp)
         if err != nil {
             return res, log.ErrorValueIn(fn, err)
         }

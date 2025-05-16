@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"lib.virginia.edu/agita/markdown"
 	"lib.virginia.edu/agita/util"
 
 	"github.com/google/go-github/v69/github"
@@ -40,7 +41,7 @@ func NewCommentImport(fields map[string]any) *CommentImport {
         }
         switch key {
             case "CreatedAt":   com.CreatedAt   = github.Ptr(t)
-            case "Body":        com.Body        = s
+            case "Body":        com.Body        = markdown.JiraToGithub(s)
         }
     }
     return &CommentImport{Comment: com}

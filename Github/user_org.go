@@ -33,6 +33,7 @@ func getUserOrgs(client *github.Client, user string) ([]*github.Organization, er
     fn  := util.FuncName()
     for opt.Page > 0 {
         list, rsp, err := client.Organizations.List(ctx, user, opt)
+        extractRateLimit(rsp)
         if err != nil {
             return res, log.ErrorValueIn(fn, err)
         }

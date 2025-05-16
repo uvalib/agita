@@ -89,7 +89,7 @@ func (c *Client) GetOrgRepos(org string) []*Repository {
 //  NOTE: returns nil if `name` is blank
 //  NOTE: returns nil on error
 func (c *Client) GetRepository(owner, repo string) *Repository {
-    return GetRepository(c, owner, repo)
+    return GetRepository(c, owner, repo, false)
 }
 
 // Get a User instance by fetching a GitHub User object.

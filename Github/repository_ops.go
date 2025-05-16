@@ -42,13 +42,15 @@ func RepoMap(repos []*github.Repository) map[string]string {
 //  NOTE: panics if the repository does not match `owner` and `name`.
 //  NOTE: returns nil if `name` is blank
 //  NOTE: returns nil on error
-func getRepository(client *github.Client, owner, name string) *github.Repository {
+func getRepository(client *github.Client, owner, name string, silent bool) *github.Repository {
     if name == "" {
         return nil
     }
     owner = OrgOwner(owner)
-    repo, _, err := client.Repositories.Get(ctx, owner, name)
-    if (log.ErrorValue(err) != nil) || !validateRepo(repo, owner, name) {
+    repo, rsp, err := client.Repositories.Get(ctx, owner, name)
+    extractRateLimit(rsp)
+    if (err != nil) || !validateRepo(repo, owner, name) {
+        if !silent { log.ErrorValue(err) }
         return nil
     }
     return repo
@@ -74,6 +76,14 @@ func validateRepo(repo *github.Repository, owner, name string) bool {
         }
     }
     return true
+}
+
+// Set repository topics.
+func setRepositoryTopics(client *github.Client, owner, name string, topics ...string) {
+    org := OrgOwner(owner)
+    _, rsp, err := client.Repositories.ReplaceAllTopics(ctx, org, name, topics)
+    extractRateLimit(rsp)
+    log.ErrorValue(err)
 }
 
 // ============================================================================
@@ -104,7 +114,8 @@ func createRepository(client *github.Client, data *RepositoryRequest) *github.Re
     } else {
         owner = *ptr.Login
     }
-    repo, _, err := client.Repositories.Create(ctx, owner, &data.Repository)
+    repo, rsp, err := client.Repositories.Create(ctx, owner, &data.Repository)
+    extractRateLimit(rsp)
     if (log.ErrorValue(err) != nil) || !validateRepo(repo, owner, name) {
         return nil
     }
@@ -119,7 +130,8 @@ func deleteRepository(client *github.Client, owner, name string) {
         panic(ERR_NO_REPO_GIVEN)
     }
     owner = OrgOwner(owner)
-    _, err := client.Repositories.Delete(ctx, owner, name)
+    rsp, err := client.Repositories.Delete(ctx, owner, name)
+    extractRateLimit(rsp)
     log.ErrorValue(err)
 }
 

@@ -57,6 +57,7 @@ func Show(msg string, arg ...any) string {
 
 // Return a list of GitHub repository names, converting any JIRA project name
 // to its matching GitHub repository.
+//  NOTE: Results do not include "issues-only" project repositories.
 func RepositoryNames(names ...string) []string {
     for i, name := range names {
         if repo := convert.ProjectToRepo[name]; repo != "" {

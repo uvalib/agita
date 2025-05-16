@@ -127,7 +127,7 @@ func TestGetRepository(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
             defer test.EvaluatePanic(tt.name, tt.err, t)
-            got := GetRepository(tt.args.client, tt.args.owner, tt.args.name)
+            got := GetRepository(tt.args.client, tt.args.owner, tt.args.name, false)
             testVerifyRepository(fn, got, tt.want, t)
 		})
 	}
@@ -159,7 +159,7 @@ func TestCreateRepository(t *testing.T) {
         tc.err  = err
         var repo *github.Repository
         if data == nil {
-            repo = TemplateRepoDataAsRepository()
+            repo = FakeRepoTemplateDataAsRepository()
             tc.args.data = &RepositoryRequest{Repository: *repo}
         } else {
             repo = &data.Repository

@@ -127,6 +127,12 @@ func (i *Issue) Labels() []string {
     return i.ptr.Fields.Labels
 }
 
+// Return the underlying Attachments.
+func (i *Issue) Attachments() []*jira.Attachment {
+    if noFields(i) { return []*jira.Attachment{} }
+    return i.ptr.Fields.Attachments
+}
+
 // ============================================================================
 // Internal functions
 // ============================================================================

@@ -96,7 +96,27 @@ func (r *Regex) ReplaceAllBytes(target, repl []byte) []byte {
     return r.regexp().ReplaceAll(target, repl)
 }
 
-func (r *Regex) ReplaceAllFunc(target []byte, repl func([]byte) []byte) []byte {
+// Return a copy of target, replacing matches of the instance pattern with the
+// return value of function repl applied to each matched substring.
+//
+// The function receives the matching substring and returns the replacement for
+// that substring (does not use [Regexp.Expand]).
+//
+func (r *Regex) ReplaceAllFunc(target string, repl func(string) string) string {
+    return r.ReplaceAllStringFunc(target, repl)
+}
+
+// Return a copy of target, replacing matches of the instance pattern with the
+// return value of function repl applied to each matched substring.
+//
+// The function receives the matching substring and returns the replacement for
+// that substring (does not use [Regexp.Expand]).
+//
+func (r *Regex) ReplaceAllStringFunc(target string, repl func(string) string) string {
+    return r.regexp().ReplaceAllStringFunc(target, repl)
+}
+
+func (r *Regex) ReplaceAllBytesFunc(target []byte, repl func([]byte) []byte) []byte {
     return r.regexp().ReplaceAllFunc(target, repl)
 }
 
@@ -146,6 +166,10 @@ func (r *Regex) FindAllStringSubmatch(target string, n int) [][]string {
 
 func (r *Regex) FindAllBytesSubmatch(target []byte, n int) [][][]byte {
     return r.regexp().FindAllSubmatch(target, n)
+}
+
+func (r *Regex) Split(target string, n int) []string {
+    return r.regexp().Split(target, n)
 }
 
 // ============================================================================

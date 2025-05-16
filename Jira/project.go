@@ -67,7 +67,7 @@ func (p *Project) Name() string {
 }
 
 // ============================================================================
-// Internal functions
+// Internal functions - properties
 // ============================================================================
 
 // Indicate whether the argument is missing a Project object.
@@ -82,18 +82,36 @@ func noProject(p *Project) bool {
 // Get all issues for the project.
 //  NOTE: may return partial results on error
 func (p *Project) Issues() []Issue {
-    items  := getIssues(p.client.ptr, p.ptr.Key)
-    result := make([]Issue, 0, len(items))
-    for _, issue := range items {
-        result = append(result, *NewIssueType(p.client, &issue))
-    }
-    return result
+    items := getIssues(p.client.ptr, p.ptr.Key)
+    return p.makeIssues(items)
+}
+
+// Get issues for the indicated project, between keys inclusive.
+//  NOTE: may return partial results on error
+//  NOTE: JQL will fail if a stated issue does not exist
+//  NOTE: PROJ-0 and PROJ-1 will be ignored for `minKey`
+func (p *Project) GetIssues(minKey, maxKey IssueKey) []Issue {
+    items := getIssueRange(p.client.ptr, p.ptr.Key, minKey, maxKey)
+    return p.makeIssues(items)
 }
 
 // Get the issue with the given issue key.
 //  NOTE: returns nil on error
 func (p *Project) GetIssue(key IssueKey) *Issue {
     return GetIssueByKey(p.client, key)
+}
+
+// ============================================================================
+// Internal methods - issues
+// ============================================================================
+
+// Transform an array of issues into Issue instances.
+func (p *Project) makeIssues(items []jira.Issue) []Issue {
+    result := make([]Issue, 0, len(items))
+    for _, issue := range items {
+        result = append(result, *NewIssueType(p.client, &issue))
+    }
+    return result
 }
 
 // ============================================================================

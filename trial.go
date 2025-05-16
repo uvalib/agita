@@ -9,9 +9,10 @@ import (
 	"fmt"
 	"strings"
 
+	"lib.virginia.edu/agita/util"
+
 	"lib.virginia.edu/agita/Github"
 	"lib.virginia.edu/agita/Jira"
-	"lib.virginia.edu/agita/util"
 )
 
 // ============================================================================
@@ -24,6 +25,7 @@ const JiraIssues        = true
 const JiraComments      = true
 
 const GithubTrials      = false
+const GithubRate        = true
 const GithubUsers       = true
 const GithubRepos       = true
 const GithubIssues      = true
@@ -47,6 +49,7 @@ type TrialFlags struct {
     jiraIssues      bool
     jiraComments    bool
     github          bool
+    githubRate      bool
     githubUsers     bool
     githubRepos     bool
     githubIssues    bool
@@ -65,7 +68,7 @@ var trial TrialFlags
 // Variables
 // ============================================================================
 
-var TRIAL_PROJECTS = []string{"AST"}
+var TRIAL_PROJECTS = []string{"RWL"}
 
 var TRIAL_REPOS = []string{"emma-ia"}
 
@@ -95,6 +98,7 @@ func trialArgs(args ...string) []string {
         trial.jiraIssues     = JiraIssues
         trial.jiraComments   = JiraComments
         trial.github         = GithubTrials
+        trial.githubRate     = GithubRate
         trial.githubUsers    = GithubUsers
         trial.githubRepos    = GithubRepos
         trial.githubIssues   = GithubIssues
@@ -109,6 +113,7 @@ func trialArgs(args ...string) []string {
         trial.jiraIssues     = JiraIssues
         trial.jiraComments   = JiraComments
         trial.github         = true
+        trial.githubRate     = GithubRate
         trial.githubUsers    = GithubUsers
         trial.githubRepos    = GithubRepos
         trial.githubIssues   = GithubIssues
@@ -124,12 +129,19 @@ func trialArgs(args ...string) []string {
                 default:                            names = append(names, arg)
             }
         }
-        if trial.jira && !(trial.jiraProjects || trial.jiraIssues  || trial.jiraComments) {
+
+        if trial.jiraProjects || trial.jiraIssues  || trial.jiraComments {
+            trial.jira = true
+        } else if trial.jira {
             trial.jiraProjects = JiraProjects
             trial.jiraIssues   = JiraIssues
             trial.jiraComments = JiraComments
         }
-        if trial.github && !(trial.githubUsers || trial.githubRepos || trial.githubIssues || trial.githubComments) {
+
+        if trial.githubRate || trial.githubUsers || trial.githubRepos || trial.githubIssues || trial.githubComments {
+            trial.github = true
+        } else if trial.github {
+            trial.githubRate     = GithubRate
             trial.githubUsers    = GithubUsers
             trial.githubRepos    = GithubRepos
             trial.githubIssues   = GithubIssues
@@ -142,12 +154,13 @@ func trialArgs(args ...string) []string {
 // Set the trial flag indicated by `arg`.
 //  NOTE: `arg` is assumed to be lowercase.
 func trialProcessArg(arg string) bool {
-    switch arg {
+    switch strings.ToLower(arg) {
         case "jira":            trial.jira              = true
         case "jiraprojects":    trial.jiraProjects      = true
         case "jiraissues":      trial.jiraIssues        = true
         case "jiracomments":    trial.jiraComments      = true
         case "github":          trial.github            = true
+        case "githubrate":      trial.githubRate        = true
         case "githubusers":     trial.githubUsers       = true
         case "githubrepos":     trial.githubRepos       = true
         case "githubissues":    trial.githubIssues      = true
@@ -173,23 +186,23 @@ func trialExpandedArgs(args ...string) []string {
 // to return an array of trial flags like
 //  []string{"jira", "jiraissues", "jiracomments"}
 func trialFlagArgs(arg string) []string {
-    arg     = strings.ToLower(arg)
     part   := strings.Split(arg, ":")
     parts  := len(part)
     result := []string{}
     if parts > 0 {
-        result = append(result, part[0])
         if parts > 2 {
             panic("malformed")
         } else if parts > 1 {
-            names := strings.Split(part[1], ",")
-            switch mode := part[0]; mode {
+            names := strings.Split(strings.ToLower(part[1]), ",")
+            switch mode := strings.ToLower(part[0]); mode {
                 case "jira", "github":
                     for i, name := range names {
                         names[i] = mode + name
                     }
             }
             result = append(result, names...)
+        } else {
+            result = append(result, arg)
         }
     }
     return result
@@ -230,6 +243,12 @@ func TrialJira() bool {
         fmt.Printf("\n*** FETCH EMMA JIRA ISSUES (%d):\n", len(all))
         for _, issue := range all {
             issue.Print()
+        }
+
+        min, max := "CSH-1300", "CSH-1399"
+        fmt.Printf("\n*** FETCH CSH JIRA ISSUES %q to %q:\n", min, max)
+        for i, issue := range cli.GetProjectByKey("CSH").GetIssues(min, max) {
+            fmt.Printf("*** %d: %s\n", i, issue.Key())
         }
     }
 
@@ -305,6 +324,14 @@ func TrialGithub() bool {
             txt := usr.Details()
             fmt.Printf("\n*** FETCH GITHUB user %q:\n%s\n", u, txt)
         }
+    }
+
+    if trial.githubRate {
+        limit := Github.GetRateLimit(nil)
+        fmt.Printf("\n*** GITHUB RATE LIMITS:\n")
+        fmt.Printf("Core:    %v\n", limit.Core)
+        fmt.Printf("Search:  %v\n", limit.Search)
+        fmt.Printf("GraphQL: %v\n", limit.GraphQL)
     }
 
     return true

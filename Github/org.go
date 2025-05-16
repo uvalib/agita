@@ -65,6 +65,7 @@ func getOrgRepos(client *github.Client, org string) ([]*github.Repository, error
     org = OrgOwner(org)
     for opt.Page > 0 {
         list, rsp, err := client.Repositories.ListByOrg(ctx, org, opt)
+        extractRateLimit(rsp)
         if err != nil {
             return res, log.ErrorValueIn(fn, err)
         }

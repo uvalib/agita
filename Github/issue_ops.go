@@ -25,6 +25,7 @@ import (
 func createIssue(client *github.Client, owner, repo string, req *github.IssueRequest) *github.Issue {
     if req == nil { panic(ERR_NO_ISSUE_REQUEST) }
     result, rsp, err := client.Issues.Create(ctx, owner, repo, req)
+    extractRateLimit(rsp)
     if log.ErrorValue(err) == nil {
         log.Info("\n*** create issue %q - rsp = %v\n", *req.Title, rsp)
     }
@@ -33,7 +34,8 @@ func createIssue(client *github.Client, owner, repo string, req *github.IssueReq
 
 // From GitHub, retrieve the indicated repository issue.
 func getIssue(client *github.Client, owner, repo string, number int) *github.Issue {
-    result, _, err := client.Issues.Get(ctx, owner, repo, number)
+    result, rsp, err := client.Issues.Get(ctx, owner, repo, number)
+    extractRateLimit(rsp)
     log.ErrorValue(err)
     return result
 }

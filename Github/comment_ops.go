@@ -21,22 +21,25 @@ import (
 // From GitHub, get the indicated issue comment object.
 //  NOTE: returns nil on error
 func getComment(client *github.Client, owner, repo string, id int64) *github.IssueComment {
-    result, _, err := client.Issues.GetComment(ctx, owner, repo, id)
+    res, rsp, err := client.Issues.GetComment(ctx, owner, repo, id)
+    extractRateLimit(rsp)
     log.ErrorValue(err)
-    return result
+    return res
 }
 
 // On GitHub, create a comment object associated with the indicated issue.
 //  NOTE: returns nil on error
 func createComment(client *github.Client, owner, repo string, issue int, src *github.IssueComment) *github.IssueComment {
-    result, _, err := client.Issues.CreateComment(ctx, owner, repo, issue, src)
+    res, rsp, err := client.Issues.CreateComment(ctx, owner, repo, issue, src)
+    extractRateLimit(rsp)
     log.ErrorValue(err)
-    return result
+    return res
 }
 
 // On GitHub, delete an issue comment object.
 func deleteComment(client *github.Client, owner, repo string, commentId int64) {
-    _, err := client.Issues.DeleteComment(ctx, owner, repo, commentId)
+    rsp, err := client.Issues.DeleteComment(ctx, owner, repo, commentId)
+    extractRateLimit(rsp)
     log.ErrorValue(err)
 }
 

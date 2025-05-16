@@ -38,6 +38,7 @@ func getUserRepos(client *github.Client, user string) ([]*github.Repository, err
     fn  := util.FuncName()
     for opt.Page > 0 {
         list, rsp, err := client.Repositories.ListByUser(ctx, user, opt)
+        extractRateLimit(rsp)
         if err != nil {
             return res, log.ErrorValueIn(fn, err)
         }

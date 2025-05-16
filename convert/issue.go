@@ -30,13 +30,27 @@ func IssueToJson(src Jira.Issue) string {
 
 // Translate a Jira issue into a Github issue import object.
 func Issue(issue Jira.Issue) *Github.IssueImport {
-    fld  := map[string]any{"Body": ""} // Ensure that "Body" is not nil.
+    fld  := map[string]any{}
     note := map[string]any{}
     skip := map[string]bool{}
     add  := func(key string, jiraValue any) {
         if githubValue, use := From(jiraValue); use {
             fld[key] = githubValue
         }
+    }
+
+    // Prefix the title with the original Jira issue key.
+    // If there was no issue title, explicitly show that.
+    title := issue.Summary()
+    if title == "" {
+        title = "(no title)"
+    }
+    title = issue.Key() + " " + title
+
+    // If there was no issue body, explicitly show that.
+    desc := issue.Description()
+    if desc == "" {
+        desc = "_(no description)_"
     }
 
     // If the assignee does not have an equivalent GitHub account, then it is
@@ -49,8 +63,8 @@ func Issue(issue Jira.Issue) *Github.IssueImport {
         assignee = ""
     }
 
-    add("Title",        issue.Summary())
-    add("Body",         issue.Description())
+    add("Title",        title)
+    add("Body",         desc)
     add("CreatedAt",    issue.Created())
     add("ClosedAt",     issue.Resolutiondate())
     add("UpdatedAt",    issue.Updated())
@@ -73,7 +87,7 @@ func Issue(issue Jira.Issue) *Github.IssueImport {
 // have no (updateable) GitHub issue equivalent.
 func issueAnnotations(issue Jira.Issue, added map[string]any, skipped map[string]bool) []string {
     res  := []string{}
-    tag  := "ORIGINAL JIRA ISSUE"
+    tag  := Github.ISSUE_ANNOTATION_TAG
     max  := util.CharCount("Resolution")
     note := func(key string, jiraValue any) {
         if !skipped[key] {
@@ -84,10 +98,7 @@ func issueAnnotations(issue Jira.Issue, added map[string]any, skipped map[string
         }
     }
 
-    // Begin with the original issue key.
-    note("Key", issue.Key())
-
-    // Follow with added notes, which should be exceptional enough that they
+    // Start with added notes, which should be exceptional enough that they
     // should appear before other lines.
     for key, val := range added {
         note(key, val)

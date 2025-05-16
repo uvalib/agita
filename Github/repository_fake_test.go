@@ -27,11 +27,11 @@ const (
     FAKE_REPO_DESC = "temporary fake repository"
 )
 
-// Template repository property.
+// Template fake repository property.
 const (
-    TEMPLATE_NAME = "agita-test-template"
-    TEMPLATE_FULL = "AGITA test template repository"
-    TEMPLATE_DESC = "Used as a source for generating repositories in test"
+    TEMPLATE_FAKE_NAME = "agita-test-template"
+    TEMPLATE_FAKE_FULL = "AGITA test template repository"
+    TEMPLATE_FAKE_DESC = "Used as a source for generating repositories in test"
 )
 
 // ============================================================================
@@ -74,7 +74,7 @@ func GetFakeRepo(client *Client) *Repository {
 
 // Create a new fake repository.
 func CreateFakeRepo(client *Client) *Repository {
-    result := createTemporaryRepo(client)
+    result := createFakeRepository(client)
     AddFakeRepo(client, result)
     return result
 }
@@ -142,24 +142,16 @@ func DeleteAllTemporaryRepos(client *Client) {
 // ============================================================================
 
 // Generate data for a unique temporary repository.
-func TemplateRepoData() *github.TemplateRepoRequest {
-    return &github.TemplateRepoRequest{
-        Name:           github.Ptr(util.Randomize(FAKE_REPO_NAME)),
-        Owner:          github.Ptr(ORG),
-        Description:    github.Ptr(util.Randomize(FAKE_REPO_DESC)),
-        Private:        github.Ptr(true),
-    }
+func FakeRepoTemplateData() *github.TemplateRepoRequest {
+    name := util.Randomize(FAKE_REPO_NAME)
+    desc := util.Randomize(FAKE_REPO_DESC)
+    return RepoTemplateData(name, desc)
 }
 
 // Generate data for a unique temporary repository.
-func TemplateRepoDataAsRepository() *github.Repository {
-    req := TemplateRepoData()
-    return &github.Repository{
-        Name:           req.Name,
-        Owner:          &github.User{Login: req.Owner},
-        Description:    req.Description,
-        Private:        req.Private,
-    }
+func FakeRepoTemplateDataAsRepository() *github.Repository {
+    req := FakeRepoTemplateData()
+    return RepoTemplateDataAsRepository(req)
 }
 
 // ============================================================================
@@ -167,25 +159,17 @@ func TemplateRepoDataAsRepository() *github.Repository {
 // ============================================================================
 
 // Create a new repository from the test template repository.
-func createTemporaryRepo(client *Client) (result *Repository) {
-    if templateRepo == nil {
-        getTemplateRepository(client)
-    }
-    srv   := client.ptr.Repositories
-    owner := ORG
-    name  := TEMPLATE_NAME
-    data  := TemplateRepoData()
-    repo, _, err := srv.CreateFromTemplate(ctx, owner, name, data)
-    if log.ErrorValue(err) == nil {
-        result = AsRepositoryType(client, repo)
-    }
-    return
+func createFakeRepository(client *Client) *Repository {
+    getFakeTemplateRepository(client)
+    data := FakeRepoTemplateData()
+    return createRepoFromTemplate(client, TEMPLATE_FAKE_NAME, data)
 }
 
 // Get all temporary test repositories from GitHub.
-func getTemporaryRepos(client *Client) (result []*Repository) {
-    result = []*Repository{}
-    res, _, err := client.ptr.Search.Repositories(ctx, FAKE_REPO_NAME, nil)
+func getTemporaryRepos(client *Client) []*Repository {
+    result := []*Repository{}
+    res, rsp, err := client.ptr.Search.Repositories(ctx, FAKE_REPO_NAME, nil)
+    extractRateLimit(rsp)
     if log.ErrorValue(err) == nil {
         for _, repo := range res.Repositories {
             result = append(result, AsRepositoryType(client, repo))
@@ -205,39 +189,31 @@ func deleteTemporaryRepos(client *Client, repos ...*Repository) {
 }
 
 // ============================================================================
-// Internal variables - template repository
+// Internal variables - template repository for fakes
 // ============================================================================
 
-var templateRepo *Repository
+// GitHub repository used as a template for generating fake repositories.
+var fakeTemplateRepo *Repository
 
 // ============================================================================
-// Internal functions - template repository
+// Internal functions - template repository for fakes
 // ============================================================================
 
 // Fetch the test template repository, creating it if necessary.
-func getTemplateRepository(client *Client) *Repository {
-    if templateRepo == nil {
-        log.SuppressPanic()
-        defer log.RestorePanic()
-        templateRepo = GetRepository(client, ORG, TEMPLATE_NAME)
-        if templateRepo == nil {
-            log.RestorePanic()
-            templateRepo = createTemplateRepository(client)
+func getFakeTemplateRepository(client *Client) *Repository {
+    if fakeTemplateRepo == nil {
+        fakeTemplateRepo = getTemplateRepository(client, TEMPLATE_FAKE_NAME)
+        if fakeTemplateRepo == nil {
+            fakeTemplateRepo = createFakeTemplateRepository(client)
         }
     }
-    return templateRepo
+    return fakeTemplateRepo
 }
 
 // Create the test template repository.
-func createTemplateRepository(client *Client) *Repository {
-    data := github.Repository{
-        Owner:          getUser(client.ptr, ORG),
-        Name:           github.Ptr(TEMPLATE_NAME),
-        FullName:       github.Ptr(TEMPLATE_FULL),
-        Description:    github.Ptr(TEMPLATE_DESC),
-        Private:        github.Ptr(true),
-        AutoInit:       github.Ptr(true),
-        IsTemplate:     github.Ptr(true),
-    }
-    return CreateRepository(client, &RepositoryRequest{Repository: data})
+func createFakeTemplateRepository(client *Client) *Repository {
+    name := TEMPLATE_FAKE_NAME
+    full := TEMPLATE_FAKE_FULL
+    desc := TEMPLATE_FAKE_DESC
+    return createTemplateRepository(client, name, full, desc)
 }
